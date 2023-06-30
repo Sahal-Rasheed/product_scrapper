@@ -3,15 +3,15 @@ import json
 import sqlite3
 
 def get_data_from_queue():
+    # Connecting to RabbitMq
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))  
     channel = connection.channel()  
-
     channel.queue_declare(queue='product_queue')  
 
     def callback(ch, method, properties, body):
         task_data = json.loads(body)
 
-        # Connect to the SQLite database
+        # Connect to the SQLite db
         db_conn = sqlite3.connect('products.db')
         cursor = db_conn.cursor()
 
@@ -29,7 +29,7 @@ def get_data_from_queue():
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
-     
+    # Consume data from queue 
     channel.basic_consume(queue='product_queue', on_message_callback=callback)
 
     try:
